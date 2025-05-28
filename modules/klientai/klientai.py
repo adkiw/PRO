@@ -1,31 +1,27 @@
 import streamlit as st
-from db import init_db
-from forms.klientai import klientas_form
-from logic.klientai import get_all_klientai, insert_klientas, update_klientas
-from tables.klientai import show_klientai_table
+import pandas as pd
 
-def show(conn=None):
-    """
-    DISPO – Klientų modulis.
-    Rodo įvedimo formą, lentelę su redagavimu ir įrašymo/atnaujinimo galimybe.
-    """
-    if conn is None:
-        conn = init_db()
+from forms.klientai import render_form as klientai_form
+from logic.klientai import get_all_klientai, insert_klientas, update_regionas
+from tables.klientai import render_table as klientai_table
 
-    st.title("DISPO – Klientų valdymas")
+def show(conn, c):
+    st.title("DISPO – Klientai")
 
-    # 1) Formos duomenys naujam klientui
-    data = klientas_form()
-    if data:
-        insert_klientas(conn, data)
-        st.success("✅ Klientas įrašytas!")
+    with st.expander("➕ Pridėti naują klientą", expanded=True):
+        data = klientai_form(conn, c)
+        if data and st.button("💾 Išsaugoti klientą"):
+            insert_klientas(conn, c, data)
+            st.success("✅ Klientą išsaugojau")
 
-    # 2) Rodome klientų lentelę
-    rows = get_all_klientai(conn)
-    edited_df = show_klientai_table(rows)
+    df = pd.DataFrame(
+        get_all_klientai(conn, c),
+        columns=["id", "pavadinimas", "kontaktai", "salis",
+                 "miestas", "regionas", "vat_numeris"]
+    )
+    edited = klientai_table(df, key="klientai")
 
-    # 3) Atnaujiname pakeitimus lentelėje
-    if not edited_df.empty:
-        for record in edited_df.to_dict(orient="records"):
-            update_klientas(conn, record['id'], record)
-        st.success("✅ Klientų duomenys atnaujinti!")
+    if edited is not None:
+        for row in edited.to_dict(orient="records"):
+            update_regionas(conn, c, row["id"], row["regionas"])
+        st.success("✅ Atnaujinau regionus")
