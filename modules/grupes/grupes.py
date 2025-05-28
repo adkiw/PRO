@@ -1,35 +1,26 @@
 import streamlit as st
-from db import init_db
-from forms.grupes import grupe_form
-from logic.grupes import get_grupes, insert_grupe, update_grupe
-from tables.grupes import show_grupes_table
+import pandas as pd
 
-def show(conn=None):
-    """
-    DISPO – Grupės modulis.
-    Leidžia kurti naujas grupes, peržiūrėti, redaguoti esamas.
-    """
-    if conn is None:
-        conn = init_db()
+from forms.grupes import render_form as grupes_form
+from logic.grupes import get_all_grupes, insert_grupe, update_aprasymas
+from tables.grupes import render_table as grupes_table
 
+def show(conn, c):
     st.title("DISPO – Grupės")
 
-    # 1) Sukurti naują grupę
-    data = grupe_form()
-    if data:
-        insert_grupe(conn, data)
-        st.success("✅ Grupė sukurta!")
+    with st.expander("➕ Pridėti naują grupę", expanded=True):
+        data = grupes_form(conn, c)
+        if data and st.button("💾 Išsaugoti grupę"):
+            insert_grupe(conn, c, data)
+            st.success("✅ Grupę išsaugojau")
 
-    # 2) Pateikti lentelę ir gauti pakeitimus
-    rows = get_grupes(conn)
-    edited_df = show_grupes_table(rows)
+    df = pd.DataFrame(
+        get_all_grupes(conn, c),
+        columns=["id", "numeris", "pavadinimas", "aprasymas"]
+    )
+    edited = grupes_table(df, key="grupes")
 
-    # 3) Atnaujinti pakeitimus DB
-    if not edited_df.empty:
-        for record in edited_df.to_dict(orient="records"):
-            update_grupe(conn, record['id'], {
-                "numeris": record["numeris"],
-                "pavadinimas": record["pavadinimas"],
-                "aprasymas": record["aprasymas"]
-            })
-        st.success("✅ Grupės duomenys atnaujinti!")
+    if edited is not None:
+        for row in edited.to_dict(orient="records"):
+            update_aprasymas(conn, c, row["id"], row["aprasymas"])
+        st.success("✅ Atnaujinau aprašymus")
