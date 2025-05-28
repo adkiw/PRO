@@ -1,26 +1,34 @@
-import streamlit as st
-from db import init_db
-from logic.vilkikai import (
-    get_vilkikai, insert, update_priekaba, get_all_priekabos
-)
-from forms.vilkikai import vilkikas_form
-from tables.vilkikai import show_vilkikai_table
+# modules/vilkikai.py
 
-def show(conn=None):
-    if conn is None:
-        conn = init_db()
+import streamlit as st
+import pandas as pd
+
+from forms.vilkikai import render_form  # tavo įvedimo forma
+from logic.vilkikai import get_all_vilkikai, insert_vilkikas, update_priekaba
+from tables.vilkikai import render_table   # tavo lentelės atvaizdavimas
+
+def show(conn):
     st.title("DISPO – Vilkikų valdymas")
 
-    # 1) Įvedimo forma
-    data = vilkikas_form()
-    if data:
-        insert(conn, data)
-        st.success("✅ Vilkikas įrašytas!")
+    # 1) Rodyti įvedimo formą ir gauti duomenis
+    with st.expander("➕ Pridėti naują vilkiką", expanded=True):
+        data = render_form(conn)
+        if data and st.button("💾 Išsaugoti vilkiką"):
+            insert_vilkikas(conn, data)
+            st.success("✅ Vilkiką išsaugojau")
 
-    # 2) Lentelė ir redagavimas
-    rows = get_vilkikai(conn)
-    edited = show_vilkikai_table(rows)
-    if not edited.empty:
-        for rec in edited.to_dict(orient="records"):
-            update_priekaba(conn, rec['id'], rec['priekaba'])
-        st.success("✅ Priekabos atnaujintos!")
+    # 2) Nuskaityti visus vilkikus
+    df = pd.DataFrame(get_all_vilkikai(conn),
+                      columns=[
+                          "id", "numeris", "marke", "pagaminimo_metai",
+                          "tech_apziura", "vadybininkas", "vairuotojai", "priekaba"
+                      ])
+
+    # 3) Atvaizduoti lentelę su galimybe redaguoti priekabą
+    edited = render_table(df, key="vilkikai_table")
+
+    # 4) Jei kažką pakeitėm, atnaujinti DB
+    if edited is not None and not edited.empty:
+        for row in edited.to_dict(orient="records"):
+            update_priekaba(conn, row["id"], row["priekaba"])
+        st.success("✅ Atnaujinau priekabas")
