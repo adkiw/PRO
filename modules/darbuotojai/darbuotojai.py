@@ -1,45 +1,27 @@
-# modules/darbuotojai.py
-
 import streamlit as st
-from db import init_db
-from forms.darbuotojai import darbuotojas_form
-from logic.darbuotojai import (
-    get_all_darbuotojai,
-    insert_darbuotojas,
-    update_darbuotojas,
-    delete_darbuotojas
-)
-from tables.darbuotojai import show_darbuotojai_table
+import pandas as pd
 
-def show(conn=None):
-    """
-    DISPO – Darbuotojų modulis.
-    Leidžia kurti, peržiūrėti, redaguoti ir trinti darbuotojus.
-    """
-    if conn is None:
-        conn = init_db()
+from forms.darbuotojai import render_form as darbuotojai_form
+from logic.darbuotojai import get_all_darbuotojai, insert_darbuotojas, update_grupe
+from tables.darbuotojai import render_table as darbuotojai_table
 
-    st.title("DISPO – Darbuotojų valdymas")
+def show(conn, c):
+    st.title("DISPO – Darbuotojai")
 
-    # 1) Naujo darbuotojo forma
-    data = darbuotojas_form()
-    if data:
-        insert_darbuotojas(conn, data)
-        st.success("✅ Darbuotojas įrašytas!")
+    with st.expander("➕ Pridėti naują darbuotoją", expanded=True):
+        data = darbuotojai_form(conn, c)
+        if data and st.button("💾 Išsaugoti darbuotoją"):
+            insert_darbuotojas(conn, c, data)
+            st.success("✅ Darbuotoją išsaugojau")
 
-    # 2) Lentelė ir redagavimo editorius
-    rows = get_all_darbuotojai(conn)
-    edited_df = show_darbuotojai_table(rows)
+    df = pd.DataFrame(
+        get_all_darbuotojai(conn, c),
+        columns=["id", "vardas", "pavarde", "pareigybe",
+                 "el_pastas", "telefonas", "grupe"]
+    )
+    edited = darbuotojai_table(df, key="darbuotojai")
 
-    # 3) Atnaujiname pakeitimus
-    if not edited_df.empty:
-        for rec in edited_df.to_dict(orient="records"):
-            update_darbuotojas(conn, rec["id"], rec)
-        st.success("✅ Darbuotojų duomenys atnaujinti!")
-
-    # 4) Trinimas
-    st.markdown("---")
-    id_to_delete = st.number_input("ID ištrynimui:", min_value=1, step=1)
-    if st.button("🗑️ Ištrinti darbuotoją"):
-        delete_darbuotojas(conn, int(id_to_delete))
-        st.success(f"✅ Darbuotojas su ID {id_to_delete} ištrintas.")
+    if edited is not None:
+        for row in edited.to_dict(orient="records"):
+            update_grupe(conn, c, row["id"], row["grupe"])
+        st.success("✅ Atnaujinau grupes")
