@@ -1,34 +1,30 @@
-# modules/vilkikai.py
-
 import streamlit as st
 import pandas as pd
 
-from forms.vilkikai import render_form  # tavo įvedimo forma
+from forms.vilkikai import render_form as vilkikai_form
 from logic.vilkikai import get_all_vilkikai, insert_vilkikas, update_priekaba
-from tables.vilkikai import render_table   # tavo lentelės atvaizdavimas
+from tables.vilkikai import render_table as vilkikai_table
 
-def show(conn):
+def show(conn, c):
     st.title("DISPO – Vilkikų valdymas")
 
-    # 1) Rodyti įvedimo formą ir gauti duomenis
+    # 1. Įvedimo forma
     with st.expander("➕ Pridėti naują vilkiką", expanded=True):
-        data = render_form(conn)
+        data = vilkikai_form(conn, c)
         if data and st.button("💾 Išsaugoti vilkiką"):
-            insert_vilkikas(conn, data)
+            insert_vilkikas(conn, c, data)
             st.success("✅ Vilkiką išsaugojau")
 
-    # 2) Nuskaityti visus vilkikus
-    df = pd.DataFrame(get_all_vilkikai(conn),
-                      columns=[
-                          "id", "numeris", "marke", "pagaminimo_metai",
-                          "tech_apziura", "vadybininkas", "vairuotojai", "priekaba"
-                      ])
+    # 2. Duomenų atvaizdavimas
+    df = pd.DataFrame(
+        get_all_vilkikai(conn, c),
+        columns=["id", "numeris", "marke", "pagaminimo_metai",
+                 "tech_apziura", "vadybininkas", "vairuotojai", "priekaba"]
+    )
+    edited = vilkikai_table(df, key="vilkikai")
 
-    # 3) Atvaizduoti lentelę su galimybe redaguoti priekabą
-    edited = render_table(df, key="vilkikai_table")
-
-    # 4) Jei kažką pakeitėm, atnaujinti DB
-    if edited is not None and not edited.empty:
+    # 3. Atnaujinti priekabą, jei redagavo lenteleje
+    if edited is not None:
         for row in edited.to_dict(orient="records"):
-            update_priekaba(conn, row["id"], row["priekaba"])
+            update_priekaba(conn, c, row["id"], row["priekaba"])
         st.success("✅ Atnaujinau priekabas")
