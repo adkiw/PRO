@@ -3,20 +3,24 @@ import streamlit as st
 import pandas as pd
 from typing import List, Dict, Any
 
-def show_kroviniai_table(rows: List[Dict[str, Any]]):
+def show_kroviniai_table(rows: List[Dict[str, Any]]) -> pd.DataFrame:
     """
-    Rodo krovinių lentelę su galimybe redaguoti būseną tiesiogiai.
+    Rodo krovinių lentelę su galimybe dinamiškai redaguoti įrašus.
+    Grąžina redaguotą DataFrame, kad būtų galima apdoroti pakeitimus.
     """
     if not rows:
-        st.info("Nėra krovinių įrašų.")
-        return
+        st.info("ℹ️ Nėra krovinių įrašų.")
+        return pd.DataFrame()
+
     df = pd.DataFrame(rows)
-    # Leidžiame redaguoti būseną
+    # Saugumo sumetimais konvertuojame į string
+    df['id'] = df['id'].astype(int)
     df['busena'] = df['busena'].astype('category')
-    edited = st.experimental_data_editor(
+
+    edited_df = st.experimental_data_editor(
         df,
+        key="kroviniai_editor",
         num_rows="dynamic",
         use_container_width=True
     )
-    # Grąžiname redaguotus duomenis, jei reikia toliau apdoroti
-    return edited
+    return edited_df
