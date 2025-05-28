@@ -1,42 +1,34 @@
-# modules/kroviniai.py
 import streamlit as st
-from db import init_db
-from forms.kroviniai import krovinio_form
-from logic.kroviniai import (
-    get_all_kroviniai, insert_krovinys,
-    update_krovinys, delete_krovinys
-)
-from tables.kroviniai import show_kroviniai_table
+import pandas as pd
 
-def show(conn=None):
-    """
-    DISPO – Krovinių modulis.
-    Rodoma forma, lentelė su redagavimu ir trynimu.
-    """
-    if conn is None:
-        conn = init_db()
+from forms.kroviniai import render_form as kroviniai_form
+from logic.kroviniai import get_all_kroviniai, insert_krovinys, update_busena
+from tables.kroviniai import render_table as kroviniai_table
 
+def show(conn, c):
     st.title("DISPO – Krovinių valdymas")
 
-    # 1) Formos duomenys
-    data = krovinio_form()
-    if data:
-        insert_krovinys(conn, data)
-        st.success("✅ Krovinys įrašytas!")
+    with st.expander("➕ Pridėti naują krovinį", expanded=True):
+        data = kroviniai_form(conn, c)
+        if data and st.button("💾 Išsaugoti krovinį"):
+            insert_krovinys(conn, c, data)
+            st.success("✅ Krovinį išsaugojau")
 
-    # 2) Rodome lentelę ir gauname redaguotus įrašus
-    rows = get_all_kroviniai(conn)
-    edited_df = show_kroviniai_table(rows)
+    df = pd.DataFrame(
+        get_all_kroviniai(conn, c),
+        columns=[
+            "id", "klientas", "uzsakymo_numeris", "pakrovimo_data",
+            "pakrovimo_laikas_nuo", "pakrovimo_laikas_iki",
+            "iskrovimo_data", "iskrovimo_laikas_nuo", "iskrovimo_laikas_iki",
+            "pakrovimo_salis", "pakrovimo_miestas", "iskrovimo_salis",
+            "iskrovimo_miestas", "vilkikas", "priekaba",
+            "atsakingas_vadybininkas", "kilometrai","frachtas",
+            "svoris", "paleciu_skaicius", "busena"
+        ]
+    )
+    edited = kroviniai_table(df, key="kroviniai")
 
-    # 3) Jei yra pakeitimų – atnaujiname DB
-    if not edited_df.empty:
-        for record in edited_df.to_dict(orient="records"):
-            update_krovinys(conn, record['id'], record)
-        st.success("✅ Lentelė atnaujinta!")
-
-    # 4) Istorinis ištrynimas
-    st.markdown("---")
-    id_to_delete = st.number_input("ID ištrynimui:", min_value=1, step=1)
-    if st.button("🗑️ Ištrinti krovinį"):
-        delete_krovinys(conn, int(id_to_delete))
-        st.success(f"✅ Krovinys su ID {id_to_delete} ištrintas.")
+    if edited is not None:
+        for row in edited.to_dict(orient="records"):
+            update_busena(conn, c, row["id"], row["busena"])
+        st.success("✅ Atnaujinau būsenas")
