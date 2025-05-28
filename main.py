@@ -1,44 +1,30 @@
 import streamlit as st
 from db import init_db
 
-# Importuoji modulius (privalo būti failai: modules/vilkikai.py ir t.t.)
-from modules import (
-    vilkikai,
-    priekabos,
-    kroviniai,
-    darbuotojai,
-    klientai,
-    grupes,
-    nustatymai
-)
+# importuojame tik show funkcijas
+from modules.vilkikai     import show as show_vilkikai
+from modules.priekabos     import show as show_priekabos
+from modules.kroviniai     import show as show_kroviniai
+from modules.darbuotojai   import show as show_darbuotojai
+from modules.klientai      import show as show_klientai
+from modules.grupes        import show as show_grupes
+from modules.nustatymai    import show as show_nustatymai
 
-# Nustatom Streamlit puslapio konfigūraciją
 st.set_page_config(layout="wide")
-conn, c = init_db()
+conn = init_db()
 
-# Šoninis meniu
-moduliai = [
-    "DISPO", "Vilkikai", "Priekabos",
-    "Kroviniai", "Darbuotojai", "Klientai",
-    "Grupės", "Nustatymai"
-]
-modulis = st.sidebar.radio("📂 Pasirink modulį", moduliai)
+PAGES = {
+    "Vilkikai":    show_vilkikai,
+    "Priekabos":    show_priekabos,
+    "Kroviniai":    show_kroviniai,
+    "Darbuotojai":  show_darbuotojai,
+    "Klientai":     show_klientai,
+    "Grupės":       show_grupes,
+    "Nustatymai":   show_nustatymai
+}
 
-# Pagrindinio turinio vaizdavimas
-if modulis == "DISPO":
-    st.title("DISPO sistema – pagrindinis langas")
-    st.write("Pasirink modulį kairėje pusėje.")
-elif modulis == "Vilkikai":
-    vilkikai.show(conn, c)
-elif modulis == "Priekabos":
-    priekabos.show(conn, c)
-elif modulis == "Kroviniai":
-    kroviniai.show(conn, c)
-elif modulis == "Darbuotojai":
-    darbuotojai.show(conn, c)
-elif modulis == "Klientai":
-    klientai.show(conn, c)
-elif modulis == "Grupės":
-    grupes.show(conn, c)
-elif modulis == "Nustatymai":
-    nustatymai.show(conn, c)
+st.sidebar.title("DISPO moduliai")
+page = st.sidebar.radio("Pasirink modulį", list(PAGES.keys()))
+
+# Kviečiame tik conn argumentą
+PAGES[page](conn)
