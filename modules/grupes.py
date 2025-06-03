@@ -1,26 +1,36 @@
-import streamlit as st
-import pandas as pd
-
-from forms.grupes import render_form as grupes_form
-from logic.grupes import get_all_grupes, insert_grupe, update_aprasymas
-from tables.grupes import render_table as grupes_table
-
-def show(conn, c):
-    st.title("DISPO – Grupės")
-
-    with st.expander("➕ Pridėti naują grupę", expanded=True):
-        data = grupes_form(conn, c)
-        if data and st.button("💾 Išsaugoti grupę"):
-            insert_grupe(conn, c, data)
-            st.success("✅ Grupę išsaugojau")
-
-    df = pd.DataFrame(
-        get_all_grupes(conn, c),
-        columns=["id", "numeris", "pavadinimas", "aprasymas"]
-    )
-    edited = grupes_table(df, key="grupes")
-
-    if edited is not None:
-        for row in edited.to_dict(orient="records"):
-            update_aprasymas(conn, c, row["id"], row["aprasymas"])
-        st.success("✅ Atnaujinau aprašymus")
+diff --git a/forms/grupes.py b/forms/grupes.py
+index 945874455405b8476356894a8a6e40ecdd3b1748..b8a421cb7475088a5ae8f3864a6418dfe5feca1d 100644
+--- a/forms/grupes.py
++++ b/forms/grupes.py
+@@ -1,22 +1,24 @@
+ import streamlit as st
+ 
+ def grupe_form():
+     """
+-    Formos komponentas naujos grupės kūrimui.
+-    Grąžina duomenis kaip žodyną arba None, jei nepateikta.
++    Form component for creating a new group.
++    Returns a dict or None if not provided.
+     """
+     with st.form("grupe_form", clear_on_submit=True):
+-        numeris = st.text_input("Grupės numeris")
+-        pavadinimas = st.text_input("Pavadinimas")
+-        aprasymas = st.text_area("Aprašymas")
+-        submitted = st.form_submit_button("💾 Išsaugoti grupę")
++        numeris = st.text_input("Group number")
++        pavadinimas = st.text_input("Name")
++        aprasymas = st.text_area("Description")
++        submitted = st.form_submit_button("💾 Save group")
+         if submitted:
+             if not numeris or not pavadinimas:
+-                st.error("Numeris ir pavadinimas yra privalomi.")
++                st.error("Number and name are required.")
+                 return None
+             return {
+                 "numeris": numeris.strip(),
+                 "pavadinimas": pavadinimas.strip(),
+                 "aprasymas": aprasymas.strip()
+             }
+     return None
++
++render_form = grupe_form
