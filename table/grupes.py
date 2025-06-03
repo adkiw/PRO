@@ -4,12 +4,11 @@ from typing import List, Dict, Any
 
 def show_grupes_table(rows: List[Dict[str, Any]]) -> pd.DataFrame:
     """
-    Rodo grupių lentelę su galimybe redaguoti:
-    numerį, pavadinimą, aprašymą.
-    Grąžina redaguotą DataFrame.
+    Display groups table with editable number, name and description.
+    Returns the edited DataFrame.
     """
     if not rows:
-        st.info("ℹ️ Nėra sukurtų grupių.")
+        st.info("ℹ️ No groups created.")
         return pd.DataFrame()
 
     df = pd.DataFrame(rows)

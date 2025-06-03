@@ -1,18 +1,18 @@
 import streamlit as st
 import pandas as pd
 
-from forms.darbuotojai import render_form as darbuotojai_form
+from forms.darbuotojai import darbuotojas_form as darbuotojai_form
 from logic.darbuotojai import get_all_darbuotojai, insert_darbuotojas, update_grupe
-from tables.darbuotojai import render_table as darbuotojai_table
+from table.darbuotojai import show_darbuotojai_table as darbuotojai_table
 
 def show(conn, c):
-    st.title("DISPO – Darbuotojai")
+    st.title("DISPO – Employees")
 
-    with st.expander("➕ Pridėti naują darbuotoją", expanded=True):
+    with st.expander("➕ Add new employee", expanded=True):
         data = darbuotojai_form(conn, c)
-        if data and st.button("💾 Išsaugoti darbuotoją"):
+        if data and st.button("💾 Save employee"):
             insert_darbuotojas(conn, c, data)
-            st.success("✅ Darbuotoją išsaugojau")
+            st.success("✅ Employee saved")
 
     df = pd.DataFrame(
         get_all_darbuotojai(conn, c),
@@ -24,4 +24,4 @@ def show(conn, c):
     if edited is not None:
         for row in edited.to_dict(orient="records"):
             update_grupe(conn, c, row["id"], row["grupe"])
-        st.success("✅ Atnaujinau grupes")
+        st.success("✅ Groups updated")

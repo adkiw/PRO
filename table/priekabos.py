@@ -4,7 +4,7 @@ from typing import List, Dict, Any
 
 def show_priekabos_table(rows: List[Dict[str, Any]]) -> pd.DataFrame:
     if not rows:
-        st.info("ℹ️ Nėra priekabų.")
+        st.info("ℹ️ No trailers available.")
         return pd.DataFrame()
 
     df = pd.DataFrame(rows)

@@ -2,15 +2,15 @@ import streamlit as st
 
 def priekaba_form():
     with st.form("priekaba_form", clear_on_submit=True):
-        tipas = st.text_input("Priekabų tipas")
-        numeris = st.text_input("Valstybinis numeris")
-        marke = st.text_input("Markė")
-        pagaminimo_metai = st.text_input("Pagaminimo metai")
-        tech_apziura = st.date_input("Tech. apžiūra")
-        submitted = st.form_submit_button("💾 Išsaugoti priekabą")
+        tipas = st.text_input("Trailer type")
+        numeris = st.text_input("License plate")
+        marke = st.text_input("Make")
+        pagaminimo_metai = st.text_input("Manufacture year")
+        tech_apziura = st.date_input("Inspection")
+        submitted = st.form_submit_button("💾 Save trailer")
         if submitted:
             if not numeris:
-                st.error("Numeris yra privalomas.")
+                st.error("Number is required.")
                 return None
             return {
                 "priekabu_tipas": tipas.strip(),
@@ -20,3 +20,5 @@ def priekaba_form():
                 "tech_apziura": str(tech_apziura)
             }
     return None
+
+render_form = priekaba_form

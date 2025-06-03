@@ -4,11 +4,11 @@ from typing import List, Dict, Any
 
 def show_klientai_table(rows: List[Dict[str, Any]]) -> pd.DataFrame:
     """
-    Rodo klientų lentelę su galimybe peržiūrėti ir redaguoti.
-    Grąžina redaguotą DataFrame, kad būtų galima apdoroti pakeitimus.
+    Display clients table with edit capability.
+    Returns the edited DataFrame for processing.
     """
     if not rows:
-        st.info("ℹ️ Nėra klientų įrašų.")
+        st.info("ℹ️ No client records.")
         return pd.DataFrame()
 
     df = pd.DataFrame(rows)

@@ -4,11 +4,11 @@ from typing import List, Dict, Any
 
 def show_vilkikai_table(rows: List[Dict[str, Any]]) -> pd.DataFrame:
     """
-    Rodo vilkikų lentelę su galimybe redaguoti.
-    Grąžina DataFrame su pakeitimais.
+    Display trucks table with editing enabled.
+    Returns the edited DataFrame.
     """
     if not rows:
-        st.info("ℹ️ Nėra vilkikų.")
+        st.info("ℹ️ No trucks available.")
         return pd.DataFrame()
 
     df = pd.DataFrame(rows)

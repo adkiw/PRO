@@ -4,11 +4,11 @@ from typing import List, Dict, Any
 
 def show_vairuotojai_table(rows: List[Dict[str, Any]]) -> pd.DataFrame:
     """
-    Rodo vairuotojų lentelę su galimybe redaguoti įrašus.
-    Grąžina redaguotą DataFrame, kad būtų galima apdoroti pakeitimus.
+    Display drivers table with edit options.
+    Returns the edited DataFrame for processing.
     """
     if not rows:
-        st.info("ℹ️ Nėra vairuotojų įrašų.")
+        st.info("ℹ️ No driver records.")
         return pd.DataFrame()
 
     df = pd.DataFrame(rows)

@@ -1,18 +1,18 @@
 import streamlit as st
 import pandas as pd
 
-from forms.kroviniai import render_form as kroviniai_form
+from forms.kroviniai import krovinio_form as kroviniai_form
 from logic.kroviniai import get_all_kroviniai, insert_krovinys, update_busena
-from tables.kroviniai import render_table as kroviniai_table
+from table.kroviniai import show_kroviniai_table as kroviniai_table
 
 def show(conn, c):
-    st.title("DISPO – Krovinių valdymas")
+    st.title("DISPO – Cargo Management")
 
-    with st.expander("➕ Pridėti naują krovinį", expanded=True):
+    with st.expander("➕ Add new cargo", expanded=True):
         data = kroviniai_form(conn, c)
-        if data and st.button("💾 Išsaugoti krovinį"):
+        if data and st.button("💾 Save cargo"):
             insert_krovinys(conn, c, data)
-            st.success("✅ Krovinį išsaugojau")
+            st.success("✅ Cargo saved")
 
     df = pd.DataFrame(
         get_all_kroviniai(conn, c),
@@ -31,4 +31,4 @@ def show(conn, c):
     if edited is not None:
         for row in edited.to_dict(orient="records"):
             update_busena(conn, c, row["id"], row["busena"])
-        st.success("✅ Atnaujinau būsenas")
+        st.success("✅ Statuses updated")

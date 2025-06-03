@@ -1,21 +1,21 @@
 import streamlit as st
 import pandas as pd
 
-from forms.vilkikai import render_form as vilkikai_form
+from forms.vilkikai import vilkikas_form as vilkikai_form
 from logic.vilkikai import get_all_vilkikai, insert_vilkikas, update_priekaba
-from tables.vilkikai import render_table as vilkikai_table
+from table.vilkikai import show_vilkikai_table as vilkikai_table
 
 def show(conn, c):
-    st.title("DISPO – Vilkikų valdymas")
+    st.title("DISPO – Truck Management")
 
-    # 1. Įvedimo forma
-    with st.expander("➕ Pridėti naują vilkiką", expanded=True):
+    # 1. Input form
+    with st.expander("➕ Add new truck", expanded=True):
         data = vilkikai_form(conn, c)
-        if data and st.button("💾 Išsaugoti vilkiką"):
+        if data and st.button("💾 Save truck"):
             insert_vilkikas(conn, c, data)
-            st.success("✅ Vilkiką išsaugojau")
+            st.success("✅ Truck saved")
 
-    # 2. Duomenų atvaizdavimas
+    # 2. Display data
     df = pd.DataFrame(
         get_all_vilkikai(conn, c),
         columns=["id", "numeris", "marke", "pagaminimo_metai",
@@ -23,8 +23,8 @@ def show(conn, c):
     )
     edited = vilkikai_table(df, key="vilkikai")
 
-    # 3. Atnaujinti priekabą, jei redagavo lenteleje
+    # 3. Update trailer if edited in table
     if edited is not None:
         for row in edited.to_dict(orient="records"):
             update_priekaba(conn, c, row["id"], row["priekaba"])
-        st.success("✅ Atnaujinau priekabas")
+        st.success("✅ Updated trailers")

@@ -4,11 +4,11 @@ from typing import List, Dict, Any
 
 def show_darbuotojai_table(rows: List[Dict[str, Any]]) -> pd.DataFrame:
     """
-    Rodo darbuotojų lentelę su galimybe redaguoti įrašus.
-    Grąžina redaguotą DataFrame, kad būtų galima apdoroti pakeitimus.
+    Display employees table with edit options.
+    Returns the edited DataFrame for processing.
     """
     if not rows:
-        st.info("ℹ️ Nėra darbuotojų įrašų.")
+        st.info("ℹ️ No employee records.")
         return pd.DataFrame()
 
     df = pd.DataFrame(rows)

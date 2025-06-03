@@ -4,12 +4,12 @@ from typing import List, Dict, Any
 
 def show_nustatymai_table(rows: List[Dict[str, Any]]) -> pd.DataFrame:
     """
-    Rodo lookup reikšmių lentelę su galimybe redaguoti.
-    rows turi būti sąrašas žodynų su laukais: id, kategorija, reiksme.
-    Grąžina redaguotą DataFrame.
+    Display lookup values table with editing enabled.
+    Rows should be dicts with: id, kategorija, reiksme.
+    Returns the edited DataFrame.
     """
     if not rows:
-        st.info("ℹ️ Nėra reikšmių.")
+        st.info("ℹ️ No values found.")
         return pd.DataFrame()
 
     df = pd.DataFrame(rows)

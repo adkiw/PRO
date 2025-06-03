@@ -5,11 +5,11 @@ from typing import List, Dict, Any
 
 def show_kroviniai_table(rows: List[Dict[str, Any]]) -> pd.DataFrame:
     """
-    Rodo krovinių lentelę su galimybe dinamiškai redaguoti įrašus.
-    Grąžina redaguotą DataFrame, kad būtų galima apdoroti pakeitimus.
+    Display cargo table with dynamic editing enabled.
+    Returns the edited DataFrame for processing.
     """
     if not rows:
-        st.info("ℹ️ Nėra krovinių įrašų.")
+        st.info("ℹ️ No cargo records.")
         return pd.DataFrame()
 
     df = pd.DataFrame(rows)
