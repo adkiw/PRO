@@ -1,37 +1,32 @@
-import streamlit as st
-
-from forms.nustatymai import render_form as nustatymai_form
-from logic.nustatymai import get_all_categories, insert_lookup, delete_lookup
-
-def show(conn, c):
-    st.title("DISPO – Nustatymai (lookup)")
-
-    # 1. Įvesti / pasirinkti kategoriją
-    cats = get_all_categories(conn, c)
-    col1, col2 = st.columns(2)
-    selected = col1.selectbox("Esama kategorija", [""] + cats)
-    new_cat = col2.text_input("Arba nauja kategorija")
-    kat = new_cat.strip() or selected
-
-    if kat:
-        st.subheader(f"Kategorija: **{kat}**")
-        # 2. Rodyti esamas reikšmes
-        values = [v for v in c.execute(
-            "SELECT reiksme FROM lookup WHERE kategorija=?", (kat,)
-        ).fetchall()]
-        st.write([v[0] for v in values] or "_(nerasta)_")
-
-        # 3. Pridėti reikšmę
-        rv = st.text_input("Nauja reikšmė")
-        if st.button("➕ Pridėti"):
-            insert_lookup(conn, c, kat, rv)
-            st.experimental_rerun()
-
-        # 4. Ištrinti reikšmę
-        delv = st.selectbox("Ištrinti", [""] + [v[0] for v in values])
-        if st.button("🗑 Pašalinti"):
-            delete_lookup(conn, c, kat, delv)
-            st.experimental_rerun()
-
-    else:
-        st.info("Pasirink arba įvesk kategoriją aukščiau.")
+diff --git a/forms/nustatymai.py b/forms/nustatymai.py
+index 56bd5f2abc457db14e1bc4b27b288bb82a9830f9..89be073513b83277d506fa7577a16649c5e2a613 100644
+--- a/forms/nustatymai.py
++++ b/forms/nustatymai.py
+@@ -1,17 +1,19 @@
+ import streamlit as st
+ 
+ def nustatymai_form(kategorijos):
+-    st.subheader("Pridėti naują reikšmę")
+-    kat = st.selectbox("Kategorija", kategorijos)
+-    val = st.text_input("Reikšmė")
+-    if st.button("➕ Pridėti"):
++    st.subheader("Add new value")
++    kat = st.selectbox("Category", kategorijos)
++    val = st.text_input("Value")
++    if st.button("➕ Add"):
+         if kat and val:
+             return kat, val.strip()
+     st.markdown("---")
+-    st.subheader("Ištrinti reikšmę")
+-    kat2 = st.selectbox("Kategorija (ištrinti)", [""] + kategorijos, key="del_cat")
+-    val2 = st.selectbox("Reikšmė (ištrinti)", [""] + (get_values_placeholder(kat2) if kat2 else []), key="del_val")
+-    if st.button("🗑️ Ištrinti"):
++    st.subheader("Delete value")
++    kat2 = st.selectbox("Category (delete)", ["" ] + kategorijos, key="del_cat")
++    val2 = st.selectbox("Value (delete)", ["" ] + (get_values_placeholder(kat2) if kat2 else []), key="del_val")
++    if st.button("🗑️ Delete"):
+         if kat2 and val2:
+             return kat2, val2
+     return None
++
++render_form = nustatymai_form
